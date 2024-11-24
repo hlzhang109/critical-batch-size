@@ -1,0 +1,34 @@
+program: scripts/train.py
+name: 604M
+method: grid
+entity: cbs
+project: cbs
+group: cbs-604M
+parameters: 
+  sweep_bs_steps:
+    values: ['64-500000', '128-260000', '256-93750', '512-48000', '1024-26000', '2048-11719', '4096-10000', '8192-8500', '16384-8000'] 
+  sweep_opt_momentum:
+    values: [adamw_0.95]
+  optimizer.beta2:
+    values: [0.99]
+  optimizer.learning_rate:
+    values: [3.16e-3] 
+  optimizer.ewa_decay:
+    values: [0.99]
+  scheduler.warmup_ratio:
+    values: [0.25]
+  scheduler.name:
+    values: [constant]
+  model.max_sequence_length:
+    values: [512]
+  device_train_microbatch_size:
+    values: [64] 
+  seed:
+    values: [0]
+
+command:
+  - ${DATA_PATH}/cbs/configs/critical-bs/sweeps/8gpu_macro13.sh
+  - ${program}
+  - "configs/critical-bs/604M.yaml"
+  - "--sweep=true"
+  - ${args}

@@ -1,0 +1,40 @@
+program: scripts/train.py
+name: depth 
+method: grid
+entity: cbs
+project: cbs
+group: cbs-depth
+parameters:
+  model.n_layers:
+    values: [96]
+  sweep_bs_steps:
+    values: ['64-700000', '128-380000', '256-200000', '512-100000', '1024-60000', '2048-38000', '8192-12000', '4096-20000', '8192-12000', '16384-10000']
+  sweep_opt_momentum:
+    values: [adamw_0.95]
+  optimizer.learning_rate:
+    values: [3.16e-3]
+  optimizer.beta2:
+    values: [0.99]
+  optimizer.ewa_decay:
+    values: [0.99]
+  scheduler.warmup_ratio:
+    values: [0.25]
+  scheduler.name:
+    values: [constant]
+  chinchilla_token:
+    values: [48_000_000]
+  model.max_sequence_length:
+    values: [512]
+  device_train_microbatch_size:
+    values: [16]
+  scheduler.name:
+    values: [constant]
+  seed:
+    values: [0]
+
+command:
+  - ${DATA_PATH}/cbs/configs/critical-bs/sweeps/8gpu_macro15.sh
+  - ${program}
+  - "configs/critical-bs/depth.yaml" 
+  - "--sweep=true"
+  - ${args}

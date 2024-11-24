@@ -1,0 +1,34 @@
+program: scripts/train.py
+name: width 
+method: grid
+entity: cbs
+project: cbs
+group: cbs-width
+parameters:
+  model.mlp_hidden_size:
+    values: [2880, 5824, 8192, 11584]
+  model.d_model:
+    values: [720, 1456, 2048, 2896]
+  sweep_bs_steps:
+    values: ['1024-7200', '2048-5000', '4096-4200', '8192-3700', '128-60000', '64-160000', '256-27000', '512-11719'] 
+  sweep_opt_momentum:
+    values: [adamw_0.95]
+  model.max_sequence_length:
+    values: [512]
+  optimizer.learning_rate:
+    values: [3.16e-3] 
+  optimizer.ewa_decay:
+    values: [0.998]
+  scheduler.warmup_ratio:
+    values: [0.25] 
+  scheduler.name:
+    values: [constant]
+  device_train_microbatch_size:
+    values: [32]
+
+command:
+  - ${DATA_PATH}/cbs/configs/critical-bs/sweeps/8gpu_macro14.sh
+  - ${program}
+  - "configs/critical-bs/width.yaml" 
+  - "--sweep=true"
+  - ${args}

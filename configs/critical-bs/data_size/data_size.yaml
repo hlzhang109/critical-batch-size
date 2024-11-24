@@ -1,0 +1,37 @@
+program: scripts/train.py
+name: 302M
+method: grid
+entity: cbs
+project: cbs
+group: cbs-302M
+parameters:
+  sweep_bs_steps:
+    values: ['64-118200', '128-56250', '256-28125', '512-15600', '1024-8400', '2048-5040', '4096-3600', '8192-2700', '16384-2700'] 
+    # 2x Chinchilla, ['64-422000', '128-198500', '256-93500', '512-45500', '1024-23500', '2048-13000', '4096-8500', '8192-6000', '16384'] 
+    # 4x Chinchilla, ['64-880000', '128-403000', '256-187500', '512-88500', '1024-43000', '2048-22000', '4096-13500', '8192-9500', '16384']
+  sweep_opt_momentum: 
+    values: [adamw_0.95]
+  optimizer.learning_rate:
+    values: [3.16e-3]
+  optimizer.beta2:
+    values: [0.99, 0.95]
+  optimizer.ewa_decay:
+    values: [0.998, 0.99]
+  scheduler.warmup_ratio:
+    values: [0.125, 0.0625] # [0.25] # [0.5]
+  scheduler.name:
+    values: [constant]
+  model.max_sequence_length:
+    values: [512]
+  device_train_microbatch_size:
+    values: [64]
+  seed:
+    values: [0]
+
+command:
+  - ${DATA_PATH}/${DATA_PATH}/cbs/configs/critical-bs/sweeps/8gpu_macro14.sh
+  - ${program}
+  - "configs/critical-bs/302M.yaml"
+  - "--optimizer.hardcode_opt_params=False"
+  - "--sweep=true"
+  - ${args}

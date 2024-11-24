@@ -1,0 +1,118 @@
+run_name: cbs-width 
+seed: 0
+dry_run: false
+sweep: true
+
+wandb:
+  name: ${run_name}
+  entity: cbs
+  project: cbs
+  group: cbs-width
+
+max_duration: 20000 
+global_train_batch_size: 256 
+device_train_microbatch_size: 128 
+time_limit: 2419200
+chinchilla_token: 6_000_000 
+
+scheduler:
+  name: constant
+  t_warmup: 5000
+  warmup_ratio: 0.25
+
+optimizer:
+  name: adamw
+  learning_rate: 1.0e-3
+  weight_decay: 0 #1.0e-4 # decoupled weight decay
+  no_decay_norm_and_bias: false
+  eps: 1.0e-8 
+  betas:
+  - 0.9
+  - 0.95
+  metrics_log_interval: 10
+
+activation_checkpointing: false 
+softmax_auxiliary_loss: false
+fused_loss: false 
+
+model:
+  d_model: 1024
+  n_heads: 16
+  n_layers: 12
+  mlp_hidden_size: 4096
+  rope: true
+  flash_attention: false
+  attention_dropout: 0.0
+  attention_layer_norm: true
+  attention_layer_norm_with_affine: true 
+  multi_query_attention: false
+  include_bias: false
+  block_type: sequential
+  layer_norm_type: default
+  layer_norm_with_affine: true 
+  bias_for_layer_norm: false
+  activation_type: gelu 
+  residual_dropout: 0.0
+  embedding_dropout: 0.0
+  max_sequence_length: 512
+  vocab_size: 50280 #50257
+  embedding_size: 50304
+  eos_token_id: 0 #50256
+  pad_token_id: 1 #50256
+  init_device: meta
+  init_fn: mitchell
+  weight_tying: false
+
+fsdp:
+  precision: mixed
+  sharding_strategy: NO_SHARD 
+
+compile: 
+  mode: default
+
+precision: amp_bf16
+max_grad_norm: 1.0
+load_path: null
+
+data:
+  paths: ${path.glob:${DATA_PATH}/olmo/data/preprocessed/gpt-neox-20b/c4/*.npy}
+  num_workers: 4
+  drop_last: true
+  pin_memory: true
+  prefetch_factor: 4
+  persistent_workers: true
+  timeout: 0
+
+tokenizer:
+  identifier: allenai/eleuther-ai-gpt-neox-20b-pii-special
+  truncate_direction: right
+
+save_folder: ${oc.env:CHECKPOINTS_PATH}/${run_name}
+save_overwrite: true
+# Sharded checkpoints (best for restarts)
+save_interval: 5000
+save_num_checkpoints_to_keep: 0
+# Unsharded checkpoints (for final storage)
+save_interval_unsharded: null
+save_num_unsharded_checkpoints_to_keep: 10
+# NOTE: not storing checkpoints for now!
+
+speed_monitor:
+  window_size: 1
+
+eval_interval: ${save_interval}
+eval_subset_num_batches: 100 
+device_eval_batch_size: ${device_train_microbatch_size} 
+evaluators:
+  ##########################
+  # Perplexity evaluations #
+  ##########################
+  - label: c4-validation
+    data:
+      paths: ${path.glob:${DATA_PATH}/olmo/data/preprocessed/gpt-neox-20b/c4_val/*.npy}
+      # - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-00-00000.npy
+      num_workers: 8
+      drop_last: true
+      pin_memory: true
+      persistent_workers: true
+      prefetch_factor: 4

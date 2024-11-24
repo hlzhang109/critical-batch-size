@@ -1,0 +1,39 @@
+program: scripts/train.py
+name: 151M 
+method: grid
+entity: cbs
+project: cbs
+group: cbs-scheduler-151M
+parameters:
+  sweep_bs_steps:
+    values: ['4096-7000', '512-16600', '1024-10500', '2048-5800']
+  sweep_opt_momentum:
+    values: [adamw_0.95]
+  optimizer.learning_rate:
+    values: [1e-2, 3.16e-3]
+  optimizer.ewa_decay:
+    values: [0.998]
+  optimizer.beta2:
+    values: [0.95]
+  optimizer.weight_decay:
+    values: [1e-2, 3.16e-2, 1e-1]
+  scheduler.warmup_ratio:
+    values: [0.25]
+  scheduler.name:
+    values: [schedule_free]
+  chinchilla_token:
+    values: [6_000_000]
+  optimizer.use_ewa:
+    values: [false]
+  device_train_microbatch_size:
+    values: [128]
+  seed:
+    values: [0]
+
+command:
+  - ${DATA_PATH}/cbs/configs/critical-bs/sweeps/8gpu_macro16.sh
+  - ${program}
+  - "configs/critical-bs/ablation.yaml" 
+  - "--optimizer.hardcode_opt_params=True"
+  - "--sweep=true"
+  - ${args}

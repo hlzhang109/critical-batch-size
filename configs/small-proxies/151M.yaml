@@ -1,0 +1,192 @@
+run_name: cbs-151M # Total number of parameters: 254,044,672, Number of non-embedding parameters: 202,533,376
+seed: 0
+dry_run: false
+
+wandb:
+  name: ${run_name}
+  entity: cbs
+  project: main
+  group: small-proxies-reproduction
+
+max_duration: 100000 # approximate num of tokens 85296 = 2.795B tokens / (32 batch * 1024 context)
+global_train_batch_size: 256 #128 #256 # 524K tokens per batch
+device_train_microbatch_size: 32 #16  # Tuned for 40GB GPU
+time_limit: 259200 # 24 hours in seconds
+
+scheduler:
+  name: cosine_with_warmup
+  t_warmup: 5000
+  final_lr: 1.0e-5
+
+optimizer:
+  name: adamw
+  learning_rate: 1.0e-3
+  weight_decay: 1.0e-4 # decoupled weight decay
+  no_decay_norm_and_bias: false
+  eps: 1.0e-8 # 1.0e-15 #
+  betas:
+  - 0.9
+  - 0.95
+  metrics_log_interval: 10
+
+activation_checkpointing: false
+softmax_auxiliary_loss: true
+
+model:
+  d_model: 1024
+  n_heads: 16
+  n_layers: 12
+  mlp_hidden_size: 4096
+  positional_embedding: rope
+  flash_attention: true
+  attention_dropout: 0.0
+  attention_layer_norm: true
+  attention_layer_norm_with_affine: true # false
+  multi_query_attention: false
+  include_bias: false
+  block_type: sequential
+  layer_norm_type: default
+  layer_norm_with_affine: true # false
+  bias_for_layer_norm: false
+  activation_type: gelu # swiglu
+  residual_dropout: 0.0
+  embedding_dropout: 0.0
+  max_sequence_length: 512 # 2048
+  vocab_size: 32100  # 50257
+  embedding_size: 32128 # 50304
+  eos_token_id: 0
+  pad_token_id: 1
+  init_device: meta
+  init_fn: trunc_normal_fan_in
+  weight_tying: false
+
+fsdp:
+  precision: mixed
+  sharding_strategy: FULL_SHARD
+
+compile: null  # causes instability on AMD GPUs
+
+precision: amp_bf16
+max_grad_norm: 1.0
+load_path: null
+
+data:
+  paths: 
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-00-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-00-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-01-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-01-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-01-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-02-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-02-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-02-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-02-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-02-00004.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-03-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-03-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-03-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-04-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-04-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-04-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-05-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-05-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-05-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-05-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-05-00004.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-06-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-06-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4/part-06-00002.npy
+  pad_direction: right
+  num_workers: 4
+  drop_last: true
+  pin_memory: true
+  prefetch_factor: 4
+  persistent_workers: true
+  timeout: 0
+
+tokenizer:
+  identifier: t5-base
+  truncate_direction: right
+
+save_folder: ${oc.env:CHECKPOINTS_PATH}/${run_name}
+save_overwrite: true
+# Sharded checkpoints (best for restarts)
+save_interval: 5000
+save_num_checkpoints_to_keep: 0
+# Unsharded checkpoints (for final storage)
+save_interval_unsharded: null
+save_num_unsharded_checkpoints_to_keep: 1
+# NOTE: not storing checkpoints for now!
+
+speed_monitor:
+  window_size: 1
+
+eval_interval: ${save_interval}
+eval_subset_num_batches: 5000 # Eval on 40M tokens
+device_eval_batch_size: 16
+evaluators:
+  ##########################
+  # Perplexity evaluations #
+  ##########################
+  - label: c4-validation
+    subset_num_batches: 10
+    data:
+      paths:
+      - s3://${DATA_PATH}/olmo/preprocessed/t5-base/c4_val/part-00-00000.npy
+      num_workers: 2
+      drop_last: true
+      pin_memory: true
+      persistent_workers: true
+      prefetch_factor: 4
+
+  # - label: rp-validation
+  #   subset_num_batches: 10
+  #   data:
+  #     paths: ${path.glob:${path.choose:${oc.env:SCRATCH_DIR,no_exist}/pretraining_data/preprocessed,/net/nfs.cirrascale/allennlp/llm-data}/redpajama/redpajama-validation.npy}
+  #     num_workers: 2
+  #     drop_last: true
+  #     pin_memory: true
+  #     persistent_workers: true
+  #     prefetch_factor: 4
+
+  ##########################
+  # Downstream evaluations #
+  ##########################
+  # - label: piqa
+  #   type: downstream
+
+  # - label: hellaswag
+  #   type: downstream
+
+  # - label: winogrande
+  #   type: downstream
+
+  # - label: openbook_qa
+  #   type: downstream
+
+  # # - label: boolq  # requires implemention of the pmi_dc matrix
+  #   # type: downstream
+  #   #
+  # - label: sciq
+  #   type: downstream
+
+  # - label: arc_easy
+  #   type: downstream
+
+  # # - label: arc_challenge  # requires implemention of the pmi_dc matrix
+  #   # type: downstream
+  #   #
+  # - label: copa
+  #   type: downstream
+
+  # - label: rte
+  #   type: downstream
+
+  # - label: commitment_bank
+  #   type: downstream
+
+  # - label: mrpc
+  #   type: downstream
+
+  # - label: sst2
+  #   type: downstream

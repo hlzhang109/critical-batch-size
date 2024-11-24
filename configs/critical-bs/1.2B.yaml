@@ -1,0 +1,267 @@
+run_name: cbs-1.2B 
+seed: 0
+dry_run: false
+sweep: true
+
+wandb:
+  name: ${run_name}
+  entity: cbs
+  project: cbs
+  group: cbs-1.2B
+
+max_duration: 20000 
+global_train_batch_size: 256
+device_train_microbatch_size: 32 
+time_limit: 2419200 
+chinchilla_token: 48_000_000 
+
+scheduler:
+  name: constant
+  t_warmup: 5000
+  # final_lr: 1.0e-5
+  warmup_ratio: 0.25
+
+optimizer:
+  name: adamw
+  learning_rate: 1.0e-3
+  weight_decay: 0 #1.0e-4 # decoupled weight decay
+  no_decay_norm_and_bias: false
+  eps: 1.0e-8 
+  betas:
+  - 0.9
+  - 0.95
+  metrics_log_interval: 10
+
+activation_checkpointing: null 
+softmax_auxiliary_loss: false
+fused_loss: false 
+
+model:
+  d_model: 2048
+  n_heads: 32
+  n_layers: 24
+  mlp_hidden_size: 8192
+  rope: true
+  flash_attention: false 
+  attention_dropout: 0.0
+  attention_layer_norm: true
+  attention_layer_norm_with_affine: true 
+  multi_query_attention: false
+  include_bias: false
+  block_type: sequential
+  layer_norm_type: default
+  layer_norm_with_affine: true 
+  bias_for_layer_norm: false
+  activation_type: gelu 
+  residual_dropout: 0.0
+  embedding_dropout: 0.0
+  max_sequence_length: 512
+  vocab_size: 50280 
+  embedding_size: 50304
+  eos_token_id: 0 #50256
+  pad_token_id: 1 #50256
+  init_device: meta
+  init_fn: mitchell
+  weight_tying: false
+
+fsdp:
+  precision: mixed
+  sharding_strategy: NO_SHARD 
+
+compile:
+  mode: default
+
+precision: amp_bf16
+max_grad_norm: 1.0
+load_path: null
+
+data:
+  paths: 
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-01-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-01-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-02-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-02-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-02-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-02-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-03-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-03-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-04-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-04-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-05-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-05-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-05-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-05-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-06-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-06-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-07-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-07-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-08-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-08-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-08-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-08-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-09-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-09-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-10-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-10-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-11-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-11-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-11-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-11-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-12-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-12-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-13-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-13-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-14-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-14-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-14-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-15-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-15-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-16-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-16-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-17-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-17-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-17-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-17-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-18-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-18-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-19-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-19-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-20-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-20-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-20-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-20-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-21-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-21-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-22-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-22-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-23-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-23-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-23-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-23-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-24-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-24-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-25-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-25-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-26-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-26-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-26-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-26-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-27-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-27-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-28-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-28-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-29-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-29-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-29-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-29-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-30-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-30-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-31-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-31-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-31-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-31-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-32-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-32-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-33-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-33-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-34-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-34-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-34-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-34-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-35-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-35-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-36-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-36-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-37-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-37-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-37-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-37-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-38-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-38-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-39-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-39-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-40-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-40-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-40-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-40-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-41-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-41-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-42-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-42-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-43-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-43-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-43-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-43-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-44-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-44-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-45-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-45-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-46-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-46-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-46-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-46-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-47-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-47-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-48-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-48-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-49-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-49-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-49-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-49-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-50-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-50-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-51-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-51-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-52-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-52-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-52-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-52-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-53-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-53-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-54-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-54-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-55-00000.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-55-00001.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-55-00002.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-55-00003.npy
+  - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-56-00000.npy
+  pad_direction: right
+  num_workers: 4
+  drop_last: true
+  pin_memory: true
+  prefetch_factor: 4
+  persistent_workers: true
+  timeout: 0
+
+tokenizer:
+  identifier: allenai/eleuther-ai-gpt-neox-20b-pii-special
+  truncate_direction: right
+
+save_folder: ${oc.env:CHECKPOINTS_PATH}/${run_name}
+save_overwrite: true
+# Sharded checkpoints (best for restarts)
+save_interval: 5000
+save_num_checkpoints_to_keep: 0
+# Unsharded checkpoints (for final storage)
+save_interval_unsharded: null
+save_num_unsharded_checkpoints_to_keep: 0 
+
+speed_monitor:
+  window_size: 1
+
+eval_interval: ${save_interval}
+eval_subset_num_batches: 100 
+device_eval_batch_size: 256
+evaluators:
+  ##########################
+  # Perplexity evaluations #
+  ##########################
+  - label: c4-validation
+    data:
+      paths: ${path.glob:${DATA_PATH}/olmo/data/preprocessed/gpt-neox-20b/c4_val/*.npy}
+      # - s3://${DATA_PATH}/olmo/preprocessed/gpt-neox-20b/c4/part-00-00000.npy
+      num_workers: 8
+      drop_last: true
+      pin_memory: true
+      persistent_workers: true
+      prefetch_factor: 4

@@ -1,0 +1,40 @@
+program: scripts/train.py
+name: 151M 
+method: grid
+entity: cbs
+project: cbs
+group: cbs-151M-ablation
+parameters:
+  sweep_bs_steps: 
+    values:
+  # 512 ['64-120000', '128-60000', '256-27000', '512-11719', '1024-7200', '2048-5000', '4096-4200', '8192-3700'] # 6_000_000 chinchilla tokens
+  # 1024: ['64-60000', '128-27000', '256-11719', '512-7200', '1024-5000', '2048-4200', '4096-3700'] # 3_000_000 chinchilla tokens
+  # 2048: ['32-60000', '64-27000', '128-11719', '256-7200', '512-5000', '1024-4200', '2048-3700'] # 1_500_000 chinchilla tokens
+  # 4096: ['16-60000', '32-27000', '64-11719', '128-7200', '256-5000', '512-4200', '1024-3700'] # 750_000 chinchilla tokens
+  sweep_opt_momentum:
+    values: [adamw_0.95]
+  optimizer.learning_rate:
+    values: [3.16e-3]
+  scheduler.warmup_ratio:
+    values: [0.25]
+  scheduler.name:
+    values: [constant]
+  chinchilla_token:
+    values: [3_000_000] 
+  model.max_sequence_length:
+    values: [2048] # [512, 1024, 4096]
+  device_train_microbatch_size:
+    values: [128]
+  optimizer.ewa_decay:
+    values: [0.998]
+  optimizer.beta2:
+    values: [0.99]
+  seed:
+    values: [0]
+
+command:
+  - ${DATA_PATH}/cbs/configs/critical-bs/sweeps/8gpu_macro15.sh
+  - ${program}
+  - "configs/critical-bs/ablation.yaml" 
+  - "--sweep=true"
+  - ${args}

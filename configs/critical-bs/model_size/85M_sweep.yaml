@@ -1,0 +1,38 @@
+program: scripts/train.py
+name: 85M
+method: grid
+entity: cbs
+project: cbs
+group: cbs-85M
+parameters:
+  sweep_bs_steps:
+    values: ['64-170000', '128-60000', '256-23438', '512-11719', '1024-7200', '2048-6000', '4096-5000']
+  sweep_opt_momentum:
+    values: [adamw_0.95]
+  optimizer.beta2:
+    values: [0.99]
+  optimizer.ewa_decay:
+    values: [0.95]
+  optimizer.learning_rate:
+    values: [3.16e-3] 
+  optimizer.ewa_decay:
+    values: [0.99]
+  scheduler.warmup_ratio:
+    values: [0.25]
+  scheduler.name:
+    values: [constant]
+  device_train_microbatch_size:
+    values: [128]
+  model.max_sequence_length:
+    values: [512]
+  chinchilla_token:
+    values: [6_000_000]
+  seed:
+    values: [0]
+
+command:
+  - ${DATA_PATH}/cbs/configs/critical-bs/sweeps/8gpu_macro15.sh
+  - ${program}
+  - "configs/critical-bs/85M.yaml"
+  - "--sweep=true"
+  - ${args}

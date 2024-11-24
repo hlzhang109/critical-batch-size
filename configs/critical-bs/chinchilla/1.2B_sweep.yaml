@@ -1,0 +1,35 @@
+program: scripts/train.py
+name: 1.2B
+method: grid
+entity: cbs
+project: cbs
+group: cbs-1.2B
+parameters: 
+  sweep_bs_steps:
+    values: ['64-900000', '128-400000', '256-187500', '512-100000', '1024-43000', '2048-38000' , '4096-16000', '8192-10000']
+  sweep_opt_momentum:
+    values: [adamw_0.8]
+  optimizer.beta2:
+    values: [0.9995]
+  optimizer.ewa_decay:
+    values: [0.999]
+  optimizer.learning_rate:
+    values: [3.16e-3]
+  scheduler.warmup_ratio:
+    values: [0.25]
+  scheduler.name:
+    values: [constant]
+  model.max_sequence_length:
+    values: [512]
+  device_train_microbatch_size:
+    values: [32]
+  seed:
+    values: [0]
+
+command:
+  - ${DATA_PATH}/cbs/configs/critical-bs/sweeps/8gpu_macro13.sh
+  - ${program}
+  - "configs/critical-bs/1.2B.yaml" 
+  - "--fsdp.sharding_strategy='NO_SHARD'"
+  - "--sweep=true"
+  - ${args}
