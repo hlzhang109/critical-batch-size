@@ -50,7 +50,6 @@ from .torch_util import (
     synchronize_value,
 )
 from .util import upload
-from .weight_averaging import WeightAverager
 
 __all__ = ["SpeedMonitor", "LRMonitor", "Trainer"]
 
@@ -122,8 +121,6 @@ class Trainer:
     cfg: TrainConfig
     model: OLMo
     fsdp_model: FSDP
-    # weight_averager: WeightAverager
-    # ema_model: OLMo
     optim: Optimizer
     scheduler: Scheduler
     train_loader: DataLoader
@@ -774,9 +771,6 @@ class Trainer:
 
     def eval_batch(self, batch: Dict[str, Any]) -> Tuple[torch.Tensor, torch.Tensor]:
         with torch.autocast("cuda", enabled=True, dtype=self.cfg.autocast_precision):
-            # if self.cfg.optimizer.use_ewa:
-            #     ce_loss, _, logits = self.model_forward(self.weight_averager.get_latest_like(self.fsdp_model), batch, loss_reduction="none")
-            # else:
             ce_loss, _, logits = self.model_forward(self.fsdp_model, batch, loss_reduction="none")
         return ce_loss.mean(dim=-1), logits
 
