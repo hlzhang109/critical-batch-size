@@ -61,13 +61,18 @@ We disable checkpointing by default. To enable checkpointing, got to scripts/tra
 ## Citation 
 If you find this repo useful, please consider citing: 
 ```
-@misc{zhang2024cbs,
-      title={How Does Critical Batch Size Scale in Pre-training?}, 
-      author={Hanlin Zhang and Depen Morwani and Nikhil Vyas and Jingfeng Wu and Difan Zou and Udaya Ghai and Dean Foster and Sham Kakade},
-      year={2024},
-      eprint={2410.21676},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2410.21676}, 
+@inproceedings{
+    zhang2025how,
+    title={How Does Critical Batch Size Scale in Pre-training?},
+    author={Hanlin Zhang and Depen Morwani and Nikhil Vyas and Jingfeng Wu and Difan Zou and Udaya Ghai and Dean Foster and Sham M. Kakade},
+    booktitle={The Thirteenth International Conference on Learning Representations},
+    year={2025},
+    url={https://openreview.net/forum?id=JCiF03qnmi}
+}
+@inproceedings{groeneveld2024olmo,
+  title={Olmo: Accelerating the science of language models},
+  author={Groeneveld, Dirk and Beltagy, Iz and Walsh, Pete and Bhagia, Akshita and Kinney, Rodney and Tafjord, Oyvind and Jha, Ananya Harsh and Ivison, Hamish and Magnusson, Ian and Wang, Yizhong and others},
+  journal={Association for Computational Linguistics},
+  year={2024}
 }
 ```
